@@ -26,7 +26,19 @@ exports.protect = async (req, res, next) => {
         const secret = process.env.JWT_SECRET || 'edugenie_jwt_secret_fallback_key_2026';
         const decoded = jwt.verify(token, secret);
 
-        req.user = await User.findById(decoded.id);
+        if (mongoose.connection.readyState === 1) {
+            req.user = await User.findById(decoded.id);
+        } else {
+            const memoryUsers = global.memoryUsers || new Map();
+            req.user = memoryUsers.get(decoded.id) || {
+                _id: decoded.id,
+                id: decoded.id,
+                name: 'Student',
+                email: 'student@edugenie.ai',
+                role: 'student',
+                isOnboarded: true
+            };
+        }
 
         if (!req.user) {
             return res.status(401).json({

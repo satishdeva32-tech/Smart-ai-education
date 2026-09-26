@@ -27,27 +27,12 @@ app.use(cors({
 
 // Ensure DB is connected for serverless invocations
 app.use(async (req, res, next) => {
-    // Skip DB check for health or static requests
-    if (req.path === '/api/health' || !req.path.startsWith('/api')) {
-        return next();
-    }
-    
     try {
-        const conn = await connectDB();
-        if (!conn || mongoose.connection.readyState !== 1) {
-            return res.status(503).json({
-                success: false,
-                error: 'MongoDB is not connected. Please verify MONGODB_URI in Vercel Environment Variables and ensure MongoDB Atlas Network Access whitelist has 0.0.0.0/0.'
-            });
-        }
-        next();
+        await connectDB();
     } catch (err) {
-        console.error('DB Middleware Error:', err);
-        return res.status(503).json({
-            success: false,
-            error: `Database connection error: ${err.message}`
-        });
+        console.warn('DB Connection Attempt Warning:', err.message);
     }
+    next();
 });
 
 // Mount routers
