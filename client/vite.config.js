@@ -7,7 +7,31 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     sourcemap: false,
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('three') || id.includes('@react-three')) {
+              return 'vendor-three';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer-motion';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-lucide';
+            }
+            if (id.includes('recharts')) {
+              return 'vendor-recharts';
+            }
+            if (id.includes('reactflow')) {
+              return 'vendor-reactflow';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    }
   },
   server: {
     proxy: {

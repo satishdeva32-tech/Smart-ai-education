@@ -17,6 +17,7 @@ const Productivity = lazy(() => import('./pages/Productivity'));
 const Metaverse = lazy(() => import('./pages/Metaverse'));
 const RiskPrediction = lazy(() => import('./pages/RiskPrediction'));
 const Settings = lazy(() => import('./pages/Settings'));
+const LearningGalaxy = lazy(() => import('./pages/LearningGalaxy'));
 
 function App() {
   const [activePage, setActivePage] = useState('dashboard');
@@ -60,6 +61,7 @@ function App() {
       case 'metaverse': return <Metaverse />;
       case 'risk_prediction': return <RiskPrediction />;
       case 'settings': return <Settings />;
+      case 'roadmap': return <LearningGalaxy />;
       default: return <Dashboard />;
     }
   };

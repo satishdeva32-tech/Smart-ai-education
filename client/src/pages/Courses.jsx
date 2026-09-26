@@ -2,43 +2,47 @@ import React, { useState } from 'react';
 import {
     Play, Clock, Star, BookOpen, ChevronRight, Search,
     Filter, Award, Brain, Zap, ArrowLeft, Trophy, Activity,
-    Layout, Maximize2, Volume2, Settings, Users
+    Layout, Maximize2, Volume2, Settings, Users, Youtube
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Courses = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     const courses = [
         {
-            title: 'Advanced React Architecture',
-            instructor: 'Neural Architect',
-            duration: '12h 45m',
+            title: "Advanced React Architecture",
+            videoUrl: "https://www.youtube.com/embed/Tn6-PIqc4UM?autoplay=1",
+            instructor: "Jack Herrington",
+            duration: "12h 45m",
             rating: 4.9,
             students: 1240,
-            level: 'Advanced',
+            level: "Advanced",
             image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800',
             progress: 65,
             desc: 'Master professional patterns: Compound components, Render props, and State Machines.'
         },
         {
-            title: 'AI Synthesis Systems',
-            instructor: 'Cortex Master',
-            duration: '8h 20m',
+            title: "AI Synthesis Systems",
+            videoUrl: "https://www.youtube.com/embed/sVcwVQRHIc8?autoplay=1",
+            instructor: "LangChain",
+            duration: "8h 20m",
             rating: 5.0,
             students: 850,
-            level: 'Expert',
+            level: "Expert",
             image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800',
             progress: 30,
             desc: 'Building agentic workflows with LangGraph and Vector Databases.'
         },
         {
-            title: 'Neural UI Design',
-            instructor: 'Glass Visionary',
-            duration: '6h 15m',
+            title: "Neural UI Design",
+            videoUrl: "https://www.youtube.com/embed/c9Wg6Cb_YlU?autoplay=1",
+            instructor: "DesignCourse",
+            duration: "6h 15m",
             rating: 4.8,
             students: 2100,
-            level: 'Intermediate',
+            level: "Intermediate",
             image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800',
             progress: 0,
             desc: 'Advanced aesthetics: Glassmorphism, 3D CSS, and Motion Orchestration.'
@@ -54,7 +58,10 @@ const Courses = () => {
             >
                 <div className="flex items-center gap-6">
                     <button
-                        onClick={() => setSelectedCourse(null)}
+                        onClick={() => {
+                            setSelectedCourse(null);
+                            setIsPlaying(false);
+                        }}
                         className="w-14 h-14 rounded-2xl bg-white border-2 border-slate-50 flex items-center justify-center text-slate-400 hover:text-primary transition-all shadow-sm group"
                     >
                         <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
@@ -68,30 +75,35 @@ const Courses = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
                     <div className="xl:col-span-2 space-y-10">
                         {/* Video Player */}
-                        <div className="aspect-video bg-slate-900 rounded-[3.5rem] relative overflow-hidden group shadow-premium-lg border-4 border-white">
-                            <img src={selectedCourse.image} alt="" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-[3s]" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    className="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center shadow-2xl shadow-primary/40 group/btn relative"
-                                >
-                                    <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
-                                    <Play size={40} className="ml-2 relative z-10" fill="currentColor" />
-                                </motion.button>
-                            </div>
-                            <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-between">
-                                <div className="flex items-center gap-8">
-                                    <button className="text-white hover:text-primary transition-colors"><Maximize2 size={24} /></button>
-                                    <div className="w-40 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                                        <div className="h-full bg-primary w-1/3" />
+                        <div className="aspect-video bg-slate-900 rounded-[3.5rem] relative overflow-hidden group shadow-premium-lg border-4 border-white flex items-center justify-center">
+                            {isPlaying ? (
+                                <iframe 
+                                    className="w-full h-full rounded-[3rem]" 
+                                    src={selectedCourse.videoUrl} 
+                                    title="YouTube video player" 
+                                    frameBorder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowFullScreen
+                                ></iframe>
+                            ) : (
+                                <>
+                                    <img src={selectedCourse.image} alt="" className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-[3s]" />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
+                                        <motion.button
+                                            onClick={() => setIsPlaying(true)}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            className="w-24 h-24 rounded-full bg-[#FF0000] text-white flex items-center justify-center shadow-2xl shadow-[#FF0000]/40 group/btn relative cursor-pointer border-4 border-white/20 hover:border-white transition-colors"
+                                        >
+                                            <div className="absolute inset-0 rounded-full bg-[#FF0000] animate-ping opacity-20" />
+                                            <Youtube size={40} className="relative z-10" fill="currentColor" />
+                                        </motion.button>
+                                        <div className="bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20 text-white font-bold tracking-widest uppercase text-sm shadow-xl pointer-events-none">
+                                            Play Course
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-6">
-                                    <button className="text-white hover:text-primary transition-colors"><Volume2 size={24} /></button>
-                                    <button className="text-white hover:text-primary transition-colors"><Settings size={24} /></button>
-                                </div>
-                            </div>
+                                </>
+                            )}
                         </div>
 
                         {/* Description & Insights */}
@@ -102,7 +114,11 @@ const Courses = () => {
                                 </h3>
                                 <div className="space-y-4">
                                     {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className="flex items-center gap-6 p-5 rounded-3xl hover:bg-slate-50 transition-all group cursor-pointer border-2 border-transparent hover:border-slate-100">
+                                        <div 
+                                            key={i} 
+                                            onClick={() => setIsPlaying(true)}
+                                            className="flex items-center gap-6 p-5 rounded-3xl hover:bg-slate-50 transition-all group cursor-pointer border-2 border-transparent hover:border-slate-100"
+                                        >
                                             <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-xs font-black text-slate-400 group-hover:text-primary group-hover:border-primary/20 shadow-sm">
                                                 0{i}
                                             </div>

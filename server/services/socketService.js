@@ -23,11 +23,12 @@ const initSocket = (server) => {
 
             // Process the message with the actual AI agent
             const aiResponse = await agentService.getChatResponse(message, isSystem);
-            console.log(`AI Response generated: "${aiResponse.substring(0, 50)}..."`);
+            const text = (typeof aiResponse === 'string') ? aiResponse : JSON.stringify(aiResponse);
+            console.log(`AI Response generated: "${text.substring(0, 50)}..."`);
 
             socket.emit('message', {
                 sender: 'ai',
-                text: aiResponse
+                text
             });
         });
 

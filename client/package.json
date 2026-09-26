@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "dependencies": {
     "@eslint/js": "^9.39.1",
     "@react-three/drei": "^10.7.7",
@@ -29,6 +32,7 @@
     "postcss": "^8.5.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-is": "^19.2.7",
     "reactflow": "^11.11.4",
     "recharts": "^3.7.0",
     "socket.io-client": "^4.8.3",

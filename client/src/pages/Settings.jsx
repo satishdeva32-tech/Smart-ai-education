@@ -34,6 +34,9 @@ const Settings = () => {
                 if (res.data?.data?.settings) {
                     // merge in case of missing keys
                     setSettings(prev => ({ ...prev, ...res.data.data.settings }));
+                    if (res.data.data.settings.personalization?.theme) {
+                        applyTheme(res.data.data.settings.personalization.theme);
+                    }
                 }
             } catch (err) {
                 console.error("Failed to load settings from server. Using defaults.");
@@ -41,6 +44,23 @@ const Settings = () => {
         };
         fetchSettings();
     }, []);
+
+    const applyTheme = (themeValue) => {
+        const root = document.documentElement;
+        root.classList.remove('dark', 'light', 'cyberpunk', 'holographic');
+        
+        if (themeValue === 'Dark') {
+            root.classList.add('dark');
+        } else if (themeValue === 'Cyberpunk') {
+            root.classList.add('cyberpunk');
+        } else if (themeValue === 'Holographic') {
+            root.classList.add('holographic');
+        } else if (themeValue === 'Auto') {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                root.classList.add('dark');
+            }
+        }
+    };
 
     const updateSetting = (category, field, value) => {
         setSettings(prev => {
@@ -55,6 +75,10 @@ const Settings = () => {
                 }
             };
         });
+
+        if (category === 'personalization' && field === 'theme') {
+            applyTheme(value);
+        }
     };
 
     const saveSettings = async () => {
@@ -197,7 +221,48 @@ const Settings = () => {
                         <ToggleSwitch checked={settings.voiceMentor.speechToText} onChange={() => updateSetting('voiceMentor', 'speechToText', !settings.voiceMentor.speechToText)} label="Speech-to-Text Dictation Mode" />
                     </div>
                 );
-            // Rendering dummy arrays for the leftover tabs for succinctness, keeping functionality
+            case 'emotional':
+                return (
+                    <div className="space-y-6">
+                        <ToggleSwitch checked={settings.emotionalIntelligence.emotionDetection} onChange={() => updateSetting('emotionalIntelligence', 'emotionDetection', !settings.emotionalIntelligence.emotionDetection)} label="Emotion Detection via Camera" />
+                        <SelectBox value={settings.emotionalIntelligence.stressMonitoring} onChange={(v) => updateSetting('emotionalIntelligence', 'stressMonitoring', v)} label="Stress Monitoring Sensitivity" options={['Low', 'Medium', 'High']} />
+                        <ToggleSwitch checked={settings.emotionalIntelligence.motivationalAlerts} onChange={() => updateSetting('emotionalIntelligence', 'motivationalAlerts', !settings.emotionalIntelligence.motivationalAlerts)} label="Motivational Alerts" />
+                        <ToggleSwitch checked={settings.emotionalIntelligence.encouragementNotifications} onChange={() => updateSetting('emotionalIntelligence', 'encouragementNotifications', !settings.emotionalIntelligence.encouragementNotifications)} label="Encouragement Notifications" />
+                    </div>
+                );
+            case 'metaverse':
+                return (
+                    <div className="space-y-6">
+                        <ToggleSwitch checked={settings.metaverse.classroom3D} onChange={() => updateSetting('metaverse', 'classroom3D', !settings.metaverse.classroom3D)} label="3D Classroom Environments" />
+                        <ToggleSwitch checked={settings.metaverse.gamifiedProgression} onChange={() => updateSetting('metaverse', 'gamifiedProgression', !settings.metaverse.gamifiedProgression)} label="Gamified Progression System" />
+                        <ToggleSwitch checked={settings.metaverse.virtualStudyRoom} onChange={() => updateSetting('metaverse', 'virtualStudyRoom', !settings.metaverse.virtualStudyRoom)} label="Virtual Study Rooms" />
+                    </div>
+                );
+            case 'career':
+                return (
+                    <div className="space-y-6">
+                        <ToggleSwitch checked={settings.careerNavigator.recommendationsEnabled} onChange={() => updateSetting('careerNavigator', 'recommendationsEnabled', !settings.careerNavigator.recommendationsEnabled)} label="Career Recommendations" />
+                        <ToggleSwitch checked={settings.careerNavigator.skillGapDetection} onChange={() => updateSetting('careerNavigator', 'skillGapDetection', !settings.careerNavigator.skillGapDetection)} label="Skill Gap Detection" />
+                        <ToggleSwitch checked={settings.careerNavigator.internshipTracking} onChange={() => updateSetting('careerNavigator', 'internshipTracking', !settings.careerNavigator.internshipTracking)} label="Internship & Opportunity Tracking" />
+                        <ToggleSwitch checked={settings.careerNavigator.certificationSuggestions} onChange={() => updateSetting('careerNavigator', 'certificationSuggestions', !settings.careerNavigator.certificationSuggestions)} label="Certification Suggestions" />
+                    </div>
+                );
+            case 'privacy':
+                return (
+                    <div className="space-y-6">
+                        <ToggleSwitch checked={settings.privacy.aiMemoryStorage} onChange={() => updateSetting('privacy', 'aiMemoryStorage', !settings.privacy.aiMemoryStorage)} label="AI Memory Storage" subtext="Allow AI to remember past conversations and context" />
+                        <ToggleSwitch checked={settings.privacy.digitalTwinDataPermissions} onChange={() => updateSetting('privacy', 'digitalTwinDataPermissions', !settings.privacy.digitalTwinDataPermissions)} label="Digital Twin Data Collection" />
+                        <ToggleSwitch checked={settings.privacy.wearableIntegration} onChange={() => updateSetting('privacy', 'wearableIntegration', !settings.privacy.wearableIntegration)} label="Wearable Biometric Integration" subtext="Sync with smartwatches for accurate stress monitoring" />
+                    </div>
+                );
+            case 'personalization':
+                return (
+                    <div className="space-y-6">
+                        <SelectBox value={settings.personalization.theme} onChange={(v) => updateSetting('personalization', 'theme', v)} label="Interface Theme" options={['Auto', 'Light', 'Dark', 'Cyberpunk', 'Holographic']} />
+                        <SelectBox value={settings.personalization.interfaceDensity} onChange={(v) => updateSetting('personalization', 'interfaceDensity', v)} label="Information Density" options={['Compact', 'Comfortable', 'Spacious']} />
+                        <SelectBox value={settings.personalization.language} onChange={(v) => updateSetting('personalization', 'language', v)} label="Primary Language" options={['English', 'Spanish', 'French', 'German', 'Mandarin']} />
+                    </div>
+                );
             default:
                 return (
                     <div className="flex flex-col items-center justify-center p-20 text-center opacity-50">
@@ -218,12 +283,12 @@ const Settings = () => {
         >
             <div className="flex items-center justify-between mb-10 pl-4">
                 <div>
-                    <h1 className="text-4xl lg:text-5xl font-black text-slate-900 uppercase tracking-tighter">System <span className="text-gradient-ai">Parameters</span></h1>
-                    <p className="text-sm font-bold text-slate-400 mt-2 uppercase tracking-widest">Adjust Neural Architecture Preferences</p>
+                    <h1 className="text-4xl lg:text-5xl font-black text-[var(--color-text-main)] uppercase tracking-tighter">System <span className="text-gradient-ai">Parameters</span></h1>
+                    <p className="text-sm font-bold text-[var(--color-text-dim)] mt-2 uppercase tracking-widest">Adjust Neural Architecture Preferences</p>
                 </div>
                 <button
                     onClick={saveSettings}
-                    className="h-14 px-8 bg-slate-900 border-2 border-slate-900 text-white rounded-3xl text-xs font-black uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all flex items-center gap-3 shadow-xl shadow-slate-900/10"
+                    className="h-14 px-8 bg-primary text-white rounded-3xl text-xs font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-3 shadow-xl cursor-pointer"
                 >
                     {isLoading ? <span className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent" /> : <Save size={16} />}
                     Sync Neural Core
@@ -232,7 +297,7 @@ const Settings = () => {
 
             <div className="flex-1 flex flex-col lg:flex-row gap-8 min-h-0">
                 {/* Sidebar Navigation for Settings */}
-                <div className="lg:w-80 flex-shrink-0 bg-white/60 backdrop-blur-3xl rounded-[3rem] p-6 border border-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] overflow-y-auto hidden-scrollbar h-fit max-h-full">
+                <div className="lg:w-80 flex-shrink-0 glass-panel !bg-[var(--color-bg-base)]/60 backdrop-blur-3xl rounded-[3rem] p-6 border border-[var(--color-border)] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] overflow-y-auto hidden-scrollbar h-fit max-h-full">
                     <nav className="space-y-2">
                         {tabs.map(tab => {
                             const isActive = activeTab === tab.id;
@@ -241,14 +306,14 @@ const Settings = () => {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-300
+                                    className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl transition-all duration-300 cursor-pointer
                                         ${isActive
-                                            ? 'bg-slate-900 text-white shadow-lg scale-[1.02]'
-                                            : 'text-slate-500 hover:bg-white hover:text-slate-900'
+                                            ? 'bg-primary text-white shadow-lg scale-[1.02]'
+                                            : 'text-[var(--color-text-dim)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-main)]'
                                         }
                                     `}
                                 >
-                                    <Icon size={20} className={isActive ? 'text-primary' : ''} />
+                                    <Icon size={20} className={isActive ? 'text-white' : 'text-primary'} />
                                     <span className="text-xs font-black uppercase tracking-widest">{tab.label}</span>
                                 </button>
                             );
@@ -258,7 +323,7 @@ const Settings = () => {
 
                 {/* Settings Editor Pane */}
                 <div className="flex-1 overflow-y-auto hidden-scrollbar">
-                    <div className="pro-card !p-8 md:!p-12 !rounded-[3.5rem] bg-white border border-slate-50 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.02)] min-h-full">
+                    <div className="pro-card !p-8 md:!p-12 !rounded-[3.5rem] bg-[var(--color-bg-base)] border border-[var(--color-border)] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.02)] min-h-full">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={activeTab}
@@ -267,11 +332,11 @@ const Settings = () => {
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <div className="mb-10 flex items-center gap-4 pb-8 border-b border-slate-100">
+                                <div className="mb-10 flex items-center gap-4 pb-8 border-b border-[var(--color-border)]">
                                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                                         {React.createElement(tabs.find(t => t.id === activeTab).icon, { size: 24 })}
                                     </div>
-                                    <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase">{tabs.find(t => t.id === activeTab).label} Options</h2>
+                                    <h2 className="text-2xl font-black text-[var(--color-text-main)] tracking-tighter uppercase">{tabs.find(t => t.id === activeTab).label} Options</h2>
                                 </div>
 
                                 {renderContent()}

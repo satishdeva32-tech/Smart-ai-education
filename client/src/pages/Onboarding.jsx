@@ -1,13 +1,78 @@
 import React, { useState } from 'react';
 import {
-    Brain, Rocket, Target, Zap, Shield, MultiSelect,
+    Brain, Rocket, Target, Zap, Shield,
     ArrowRight, ChevronRight, CheckCircle2, Globe, Star,
     Layers, Cpu, Activity, Fingerprint
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import useAuthStore from '../store/useAuthStore';
+import { API_URL } from '../config';
 
-const Onboarding = () => {
+const Onboarding = ({ onComplete }) => {
     const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const { setUser } = useAuthStore();
+
+    const [selections, setSelections] = useState({
+        learningStyle: 'visual',
+        careerGoal: 'Software Engineer',
+        preferredLanguage: 'English'
+    });
+
+    const stepOptions = {
+        1: {
+            field: 'learningStyle',
+            options: [
+                { label: 'Visual (diagrams, videos)', value: 'visual' },
+                { label: 'Auditory (podcasts, discussions)', value: 'auditory' },
+                { label: 'Logical (problem solving, math)', value: 'logical' },
+                { label: 'Practical (hands-on coding)', value: 'practical' }
+            ]
+        },
+        2: {
+            field: 'careerGoal',
+            options: [
+                { label: 'Software Engineer', value: 'Software Engineer' },
+                { label: 'Data Scientist / AI', value: 'Data Scientist / AI Engineer' },
+                { label: 'Product Manager', value: 'Product Manager' },
+                { label: 'Academic Researcher', value: 'Academic Researcher' }
+            ]
+        },
+        3: {
+            field: 'preferredLanguage',
+            options: [
+                { label: 'English', value: 'English' },
+                { label: 'Spanish', value: 'Spanish' },
+                { label: 'French', value: 'French' },
+                { label: 'German', value: 'German' }
+            ]
+        }
+    };
+
+    const handleFinalize = async () => {
+        try {
+            setLoading(true);
+            setError('');
+            const response = await axios.put(`${API_URL}/api/auth/profile`, selections);
+            if (response.data.success) {
+                if (response.data.user) {
+                    setUser(response.data.user);
+                }
+                if (onComplete) {
+                    onComplete();
+                }
+            } else {
+                setError(response.data.error || 'Failed to complete onboarding');
+            }
+        } catch (err) {
+            console.error('Onboarding finalization error:', err);
+            setError(err.response?.data?.error || err.message || 'An error occurred during onboarding finalization');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const steps = [
         {
@@ -82,32 +147,51 @@ const Onboarding = () => {
                             </p>
                         </div>
 
+                        {error && (
+                            <div className="bg-rose-50 border-2 border-rose-100 text-rose-600 rounded-[1.5rem] p-4 text-xs font-black uppercase tracking-wider pl-6 max-w-2xl mx-auto">
+                                {error}
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto pt-8">
-                            {[1, 2, 3, 4].map((i) => (
-                                <button key={i} className="p-8 rounded-[2.5rem] bg-slate-50 border-2 border-white hover:border-primary/20 hover:bg-primary/5 hover:shadow-premium-lg transition-all text-left group">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Option Vector {i}</span>
-                                        <ChevronRight size={18} className="text-slate-300 group-hover:text-primary transition-colors" />
-                                    </div>
-                                </button>
-                            ))}
+                            {stepOptions[step]?.options.map((opt) => {
+                                const isSelected = selections[stepOptions[step].field] === opt.value;
+                                return (
+                                    <button
+                                        key={opt.value}
+                                        type="button"
+                                        onClick={() => setSelections({
+                                            ...selections,
+                                            [stepOptions[step].field]: opt.value
+                                        })}
+                                        className={`p-8 rounded-[2.5rem] border-2 transition-all text-left group ${isSelected ? 'border-primary bg-primary/5 shadow-premium-lg' : 'bg-slate-50 border-white hover:border-primary/20 hover:bg-primary/5 hover:shadow-premium-lg'}`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className={`text-sm font-black uppercase tracking-tight ${isSelected ? 'text-primary' : 'text-slate-900'}`}>{opt.label}</span>
+                                            <ChevronRight size={18} className={`${isSelected ? 'text-primary' : 'text-slate-300'} group-hover:text-primary transition-colors`} />
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         <div className="pt-12 flex justify-center gap-6">
                             {step > 1 && (
                                 <button
                                     onClick={() => setStep(step - 1)}
-                                    className="h-18 px-12 bg-white border-2 border-slate-100 rounded-3xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-slate-200 transition-all"
+                                    disabled={loading}
+                                    className="h-18 px-12 bg-white border-2 border-slate-100 rounded-3xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-slate-200 transition-all disabled:opacity-50"
                                 >
                                     Previous Vector
                                 </button>
                             )}
                             <button
-                                onClick={() => step < 3 ? setStep(step + 1) : null}
-                                className="h-18 px-12 bg-slate-900 text-white rounded-3xl text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-2xl flex items-center gap-4 group"
+                                onClick={() => step < 3 ? setStep(step + 1) : handleFinalize()}
+                                disabled={loading}
+                                className="h-18 px-12 bg-slate-900 text-white rounded-3xl text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-2xl flex items-center gap-4 group disabled:opacity-50"
                             >
-                                {step === 3 ? 'Finalize Neural Link' : 'Continue Calibration'}
-                                <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                                {loading ? 'Finalizing Sync...' : (step === 3 ? 'Finalize Neural Link' : 'Continue Calibration')}
+                                {!loading && <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />}
                             </button>
                         </div>
                     </motion.div>

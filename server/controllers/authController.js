@@ -8,11 +8,12 @@ const jwt = require('jsonwebtoken');
 exports.register = async (req, res, next) => {
     try {
         const { name, email, password, role } = req.body;
+        const cleanEmail = email ? email.toLowerCase().trim() : '';
 
         // Create user
         const user = await User.create({
             name,
-            email,
+            email: cleanEmail,
             password,
             role,
         });
@@ -24,6 +25,9 @@ exports.register = async (req, res, next) => {
 
         sendTokenResponse(user, 201, res);
     } catch (err) {
+        if (err.code === 11000) {
+            return res.status(400).json({ success: false, error: 'Email is already registered' });
+        }
         res.status(400).json({ success: false, error: err.message });
     }
 };
@@ -40,8 +44,10 @@ exports.login = async (req, res, next) => {
             return res.status(400).json({ success: false, error: 'Please provide an email and password' });
         }
 
+        const cleanEmail = email.toLowerCase().trim();
+
         // Check for user
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne({ email: cleanEmail }).select('+password');
 
         if (!user) {
             return res.status(401).json({ success: false, error: 'Invalid credentials' });

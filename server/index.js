@@ -20,9 +20,8 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
 // Enable CORS
-// Enable CORS
 app.use(cors({
-    origin: process.env.CLIENT_URL || '*',
+    origin: process.env.CLIENT_URL || true,
     credentials: true
 }));
 
@@ -32,16 +31,36 @@ app.use('/api/agent', require('./routes/agentRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/user', require('./routes/userRoutes'));
 
+const mongoose = require('mongoose');
+app.get('/api/health', (req, res) => res.status(200).json({
+    success: true,
+    status: 'ok',
+    dbState: mongoose.connection.readyState,
+    dbHost: mongoose.connection.host,
+    dbPort: mongoose.connection.port,
+    dbName: mongoose.connection.name
+}));
+
+const path = require('path');
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV !== 'production') {
+// Serve static assets in production from the project root `public` folder
+if (process.env.NODE_ENV === 'production') {
+    const publicPath = path.join(__dirname, '..', 'public');
+    app.use(express.static(publicPath));
+    app.get(/.*/, (req, res) => {
+        res.sendFile(path.join(publicPath, 'index.html'));
+    });
+}
+
+if (!process.env.VERCEL) {
     const server = app.listen(PORT, () => {
         console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
     });
 
-    // Init Socket.io
+    // Init Socket.io for real-time features
     const initSocket = require('./services/socketService');
-    const io = initSocket(server);
+    initSocket(server);
 }
 
 module.exports = app;

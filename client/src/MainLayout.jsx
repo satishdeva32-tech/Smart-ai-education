@@ -14,6 +14,25 @@ const MainLayout = ({ children, activePage, setActivePage }) => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const { logout, user } = useAuthStore();
+    const { theme, setTheme } = useTheme();
+    const [searchPlaceholder, setSearchPlaceholder] = useState('Ask EduGenie anything...');
+
+    useEffect(() => {
+        const placeholders = [
+            'Ask EduGenie anything...',
+            'Explain Binary Trees',
+            'Generate Notes',
+            'Teach Calculus',
+            'Summarize this PDF',
+            'Create Practice Quiz'
+        ];
+        let idx = 0;
+        const interval = setInterval(() => {
+            idx = (idx + 1) % placeholders.length;
+            setSearchPlaceholder(placeholders[idx]);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
 
     const menuItems = [
         { id: 'dashboard', icon: Home, label: 'Dashboard' },
@@ -93,24 +112,49 @@ const MainLayout = ({ children, activePage, setActivePage }) => {
                     </nav>
 
                     <div className="pt-8 space-y-6">
-                        <div className="pro-card !p-5 !rounded-3xl bg-slate-50/50 border-slate-100 flex items-center gap-4 group cursor-pointer hover:bg-white transition-colors">
-                            <div className="w-12 h-12 rounded-2xl bg-white overflow-hidden border-2 border-white shadow-md flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
-                                {user?.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : <User size={24} />}
+                        <div className="glass-panel !p-6 flex flex-col items-center gap-4 group relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            
+                            <div className="relative">
+                                <motion.div 
+                                    animate={{ rotate: 360 }} 
+                                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                                    className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary via-accent to-secondary opacity-70 blur-sm"
+                                />
+                                <div className="relative w-16 h-16 rounded-full bg-white overflow-hidden border-2 border-white flex items-center justify-center text-slate-400 z-10 shadow-xl">
+                                    {user?.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : <User size={28} className="text-primary" />}
+                                </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-black truncate text-slate-900">{user?.name || 'Student'}</p>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-success animate-pulse-soft"></div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Neural Link Active</p>
+                            
+                            <div className="text-center w-full z-10">
+                                <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full mb-2 border border-white/20 shadow-sm">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-primary">Level 12</p>
+                                </div>
+                                <p className="text-sm font-black truncate text-[var(--color-text-main)]">{user?.name || 'Deva'}</p>
+                                
+                                <div className="mt-4 space-y-1.5">
+                                    <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-[var(--color-text-dim)]">
+                                        <span>580 / 700 XP</span>
+                                        <span className="text-primary">Next Level</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-[var(--color-bg-subtle)] rounded-full overflow-hidden border border-[var(--color-border)] shadow-inner">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: '82%' }}
+                                            transition={{ duration: 1.5, ease: "easeOut" }}
+                                            className="h-full bg-gradient-to-r from-primary to-secondary"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                         <button
                             onClick={logout}
-                            className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-rose-500 font-black hover:bg-rose-50 transition-all uppercase text-[10px] tracking-[0.2em] group"
+                            className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-[1.5rem] text-rose-500 font-black hover:bg-rose-500/10 hover:shadow-[0_0_15px_rgba(244,63,94,0.2)] border border-transparent hover:border-rose-500/20 transition-all uppercase text-[10px] tracking-[0.2em] group"
                         >
-                            <LogOut size={20} strokeWidth={2.5} className="group-hover:-translate-x-1 transition-transform" />
-                            Disconnect session
+                            <LogOut size={16} strokeWidth={2.5} className="group-hover:-translate-x-1 transition-transform" />
+                            Disconnect Session
                         </button>
                     </div>
                 </div>
@@ -129,14 +173,27 @@ const MainLayout = ({ children, activePage, setActivePage }) => {
                             <Menu size={22} />
                         </motion.button>
 
-                        <div className="hidden md:flex items-center gap-4 px-6 h-14 bg-white border-2 border-slate-50 rounded-2xl w-full max-w-xl group focus-within:border-primary/20 focus-within:ring-4 focus-within:ring-primary/5 transition-all duration-300 shadow-sm">
-                            <Search size={20} className="text-slate-300 group-focus-within:text-primary transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Query neural nodes, curriculum..."
-                                className="bg-transparent border-none text-sm font-bold w-full focus:outline-none placeholder:text-slate-300"
-                            />
-                            <div className="flex items-center gap-1 px-2 py-1 bg-slate-50 rounded-md border border-slate-100 text-[9px] font-black text-slate-400 group-hover:border-primary/10 group-hover:text-primary transition-colors">
+                        <div className="hidden md:flex items-center gap-4 px-6 h-14 glass-panel !rounded-[1.5rem] w-full max-w-xl group focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-500 shadow-[0_0_15px_rgba(0,0,0,0.02)]">
+                            <motion.div 
+                                animate={ { scale: [1, 1.2, 1] } } 
+                                transition={ { repeat: Infinity, duration: 2, ease: "easeInOut" } }
+                                className="text-primary"
+                            >
+                                <Sparkles size={18} />
+                            </motion.div>
+                            <AnimatePresence mode="wait">
+                                <motion.input
+                                    key={searchPlaceholder}
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -5 }}
+                                    transition={{ duration: 0.2 }}
+                                    type="text"
+                                    placeholder={searchPlaceholder}
+                                    className="bg-transparent border-none text-sm font-bold w-full focus:outline-none text-[var(--color-text-main)] placeholder:text-[var(--color-text-dim)]"
+                                />
+                            </AnimatePresence>
+                            <div className="flex items-center gap-1 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-[9px] font-black text-[var(--color-text-dim)] group-hover:border-primary/30 group-hover:text-primary group-hover:shadow-[0_0_10px_rgba(108,99,255,0.2)] transition-all cursor-pointer">
                                 CMD K
                             </div>
                         </div>
@@ -160,11 +217,31 @@ const MainLayout = ({ children, activePage, setActivePage }) => {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <button className="p-3 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-2xl transition-all relative group">
+                            <div className="relative group/theme">
+                                <button className="p-3 text-[var(--color-text-dim)] hover:text-primary hover:bg-primary/5 rounded-2xl transition-all relative">
+                                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-secondary animate-pulse-soft"></div>
+                                </button>
+                                <div className="absolute right-0 top-full mt-2 w-48 glass-panel !p-2 opacity-0 invisible group-hover/theme:opacity-100 group-hover/theme:visible transition-all duration-300 z-50">
+                                    <div className="text-[10px] font-black text-[var(--color-text-dim)] uppercase tracking-widest px-3 py-2">Select OS Theme</div>
+                                    <div className="space-y-1">
+                                        {['light', 'cyber-neon', 'purple-ai', 'dark-matrix', 'sunset', 'hacker'].map(t => (
+                                            <button 
+                                                key={t}
+                                                onClick={() => setTheme(t)}
+                                                className={`w-full text-left px-3 py-2 text-xs font-bold rounded-xl transition-all ${theme === t ? 'bg-primary/10 text-primary' : 'text-[var(--color-text-dim)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-main)]'} uppercase tracking-wider`}
+                                            >
+                                                {t.replace('-', ' ')}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button className="p-3 text-[var(--color-text-dim)] hover:text-primary hover:bg-primary/5 rounded-2xl transition-all relative group">
                                 <Bell size={22} />
-                                <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-primary rounded-full border-2 border-white group-hover:scale-125 transition-transform"></span>
+                                <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-primary rounded-full border-2 border-[var(--color-bg-base)] group-hover:scale-125 transition-transform shadow-[0_0_8px_rgba(108,99,255,0.6)]"></span>
                             </button>
-                            <button onClick={toggleFullscreen} className="p-3 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-2xl transition-all">
+                            <button onClick={toggleFullscreen} className="p-3 text-[var(--color-text-dim)] hover:text-primary hover:bg-primary/5 rounded-2xl transition-all">
                                 {isFullscreen ? <Minimize2 size={22} /> : <Maximize2 size={22} />}
                             </button>
                         </div>
