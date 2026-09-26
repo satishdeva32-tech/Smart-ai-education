@@ -7,19 +7,23 @@ mongoose.set('bufferCommands', false);
 let cachedConnection = null;
 
 const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) {
+  if (mongoose.connection.readyState === 1) {
     return mongoose.connection;
   }
 
-  const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
+  let uri = process.env.MONGODB_URI || process.env.MONGO_URI;
   if (!uri) {
     console.warn('No MongoDB URI provided; skipping DB connection.');
     return null;
   }
 
+  // Clean URI in case quotes or spaces were copied into Vercel env
+  uri = uri.trim().replace(/^["']|["']$/g, '');
+
   try {
     cachedConnection = await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 5000,
+      bufferCommands: false,
     });
     console.log(`MongoDB Connected: ${cachedConnection.connection.host}`);
     return cachedConnection;
