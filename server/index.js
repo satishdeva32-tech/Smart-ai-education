@@ -27,12 +27,26 @@ app.use(cors({
 
 // Ensure DB is connected for serverless invocations
 app.use(async (req, res, next) => {
+    // Skip DB check for health or static requests
+    if (req.path === '/api/health' || !req.path.startsWith('/api')) {
+        return next();
+    }
+    
     try {
-        await connectDB();
+        const conn = await connectDB();
+        if (!conn && !process.env.MONGODB_URI && !process.env.MONGO_URI) {
+            return res.status(503).json({
+                success: false,
+                error: 'Database not connected: MONGODB_URI is missing in Vercel Environment Variables.'
+            });
+        }
         next();
     } catch (err) {
         console.error('DB Middleware Error:', err);
-        next();
+        return res.status(503).json({
+            success: false,
+            error: `Database connection error: ${err.message}`
+        });
     }
 });
 

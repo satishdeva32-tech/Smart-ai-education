@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+// Disable buffering so queries fail fast instead of hanging for 10s when DB is unreachable
+mongoose.set('bufferCommands', false);
+
 let cachedConnection = null;
 
 const connectDB = async () => {
@@ -8,19 +11,15 @@ const connectDB = async () => {
     return mongoose.connection;
   }
 
-  if (cachedConnection) {
-    return cachedConnection;
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
+  if (!uri) {
+    console.warn('No MongoDB URI provided; skipping DB connection.');
+    return null;
   }
 
   try {
-    const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
-    if (!uri) {
-      console.warn('No MongoDB URI provided; skipping DB connection.');
-      return null;
-    }
-    
     cachedConnection = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 5000,
     });
     console.log(`MongoDB Connected: ${cachedConnection.connection.host}`);
     return cachedConnection;
