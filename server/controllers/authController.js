@@ -109,7 +109,8 @@ exports.updateProfile = async (req, res, next) => {
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
     // Create token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const secret = process.env.JWT_SECRET || 'edugenie_jwt_secret_fallback_key_2026';
+    const token = jwt.sign({ id: user._id }, secret, {
         expiresIn: '30d',
     });
 

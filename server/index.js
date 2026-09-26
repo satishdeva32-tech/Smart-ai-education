@@ -25,6 +25,17 @@ app.use(cors({
     credentials: true
 }));
 
+// Ensure DB is connected for serverless invocations
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        console.error('DB Middleware Error:', err);
+        next();
+    }
+});
+
 // Mount routers
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/agent', require('./routes/agentRoutes'));
